@@ -1,0 +1,11 @@
+#!/bin/bash
+
+FOLDER=$1
+
+mkdir -p $FOLDER/server &> /dev/null
+
+cp client $FOLDER/.
+cp server $FOLDER/server/.
+cp runclient $FOLDER/.
+cp runserver $FOLDER/.
+cp confere $FOLDER/.

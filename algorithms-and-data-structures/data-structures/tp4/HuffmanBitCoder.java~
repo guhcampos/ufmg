@@ -1,0 +1,27 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.FileNotFoundException;
+public class HuffmanBitCoder {
+
+	static BufferedReader entrada;
+
+	public static void main (String[] arEntrada) {
+
+		if ( arEntrada.length > 0 ) {
+			try {
+				entrada = new BufferedReader ( new FileReader ( arEntrada[0] ) );
+			}
+			catch (FileNotFoundException erro) {
+				System.out.println ("");
+				System.out.println (erro);
+				System.out.println ("Arquivo nao encontrado, tente novamente");
+				System.exit(0);
+			}
+		}
+		else {
+			System.out.println ("Entre com um arquivo na linha de comando");
+			System.exit (0);
+		}
+	}
+}

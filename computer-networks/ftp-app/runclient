@@ -1,0 +1,7 @@
+#!/bin/bash
+export LOLEV_MODE=ACTIVE
+export LOLEV_MTU=1500
+export LOLEV_LOCAL_PORT=20000
+export LOLEV_REMOTE_PORT=2000
+export LOLEV_REMOTE_HOST=127.0.0.1
+valgrind $HOME/redestp1/client -C $1 -N $2

@@ -1,0 +1,7 @@
+Residuo Antigo   Novo Residuo     Posicao          Score           
+N                K                              26               16
+N                I                              78               14
+S                H                             100               14
+A                T                             176               22
+N                K                             214               28
+V                L                             242               23

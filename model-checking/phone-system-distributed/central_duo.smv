@@ -1,0 +1,196 @@
+MODULE main
+
+VAR
+    line0: { WAIT, CALL, RING, TALK, DIAL, ERR };
+    line0_connect: { NONE, LINE1, LINE2 };
+
+    line1: { WAIT, CALL, RING, TALK, DIAL, ERR };
+    line1_connect: { NONE, LINE0, LINE2 };
+
+    line2: { WAIT, CALL, RING, TALK, DIAL, ERR };
+    line2_connect: { NONE, LINE0, LINE1 };
+
+ASSIGN
+
+    init(line0_connect) := NONE;
+    next(line0_connect) := case
+                           line0_connect = NONE: { LINE1, LINE2 };
+                           line0_connect = LINE1 & line0 in { WAIT, DIAL, CALL, RING } : LINE1;
+                           line0_connect = LINE2 & line0 in { WAIT, DIAL, CALL, RING }: LINE2;
+                           line0_connect = LINE1 & line0 = TALK: { NONE, LINE1 };
+                           line0_connect = LINE2 & line0 = TALK: { NONE, LINE2 };
+                           TRUE: NONE;
+                           esac;
+
+    init(line1_connect) := NONE;
+    next(line1_connect) := case
+                           line1_connect = NONE: { LINE0, LINE2 };
+                           line1_connect = LINE0 & line0 in { WAIT, DIAL, CALL, RING }: LINE0;
+                           line1_connect = LINE2 & line0 in { WAIT, DIAL, CALL, RING }: LINE2;
+                           line1_connect = LINE0 & line0 = TALK: { NONE, LINE0 };
+                           line1_connect = LINE2 & line0 = TALK: { NONE, LINE2 };
+                           TRUE: NONE;
+                           esac;
+
+    init(line2_connect) := NONE;
+    next(line2_connect) := case
+                           line2_connect = NONE: { LINE1, LINE0 };
+                           line2_connect = LINE1 & line0 in { WAIT, DIAL, CALL, RING }: LINE1;
+                           line2_connect = LINE0 & line0 in { WAIT, DIAL, CALL, RING }: LINE0;
+                           line2_connect = LINE1 & line0 = TALK: { NONE, LINE1 };
+                           line2_connect = LINE0 & line0 = TALK: { NONE, LINE0 };
+                           TRUE: NONE;
+                           esac;
+
+    init(line0) := WAIT;
+    next(line0) := case
+
+                -- Se estou em erro somente posso voltar pro WAIT
+                line0 = ERR: WAIT;
+
+                -- Se estou em wait e tento me conectar a outra linha, vou pra DIAL
+                -- Se estou em wait e alguem conecta vou para RING
+                line0 = WAIT & line0_connect != NONE: DIAL;
+                line0 = WAIT & line1_connect = LINE0: RING;
+                line0 = WAIT & line2_connect = LINE0: RING;
+                line0 = WAIT & line0_connect = NONE: WAIT;
+
+                -- Se eu estou falando e desconecto, volto pra WAIT
+                -- Se estamos conversando e a linha remota desliga, volto pro WAIT
+                line0 = TALK & line0_connect = NONE: WAIT;
+                line0 = TALK & line0_connect != NONE: TALK;
+                line0 = TALK & line0_connect = LINE1 & line1_connect = NONE: WAIT;
+                line0 = TALK & line0_connect = LINE2 & line2_connect = NONE: WAIT;
+
+                -- Se estou tocando e me conecto, falamos (TALK)
+                line0 = RING & line0_connect != NONE: TALK;
+                line0 = RING & line0_connect = NONE: RING;
+
+                -- Se estou discando e a linha remota esta livre, passa a tocar
+                line0 = DIAL & line0_connect = LINE1 & line1_connect = NONE: CALL;
+                line0 = DIAL & line0_connect = LINE1 & line1_connect != NONE: ERR;
+                line0 = DIAL & line0_connect = LINE2 & line2_connect = NONE: CALL;
+                line0 = DIAL & line0_connect = LINE2 & line2_connect != NONE: ERR;
+
+                -- Se esta tocando e a linha remota conecta em mim, conversamos
+                line0 = CALL & line0_connect = LINE1 & line1_connect = LINE0: TALK;
+                line0 = CALL & line0_connect = LINE1 & line1_connect = NONE: CALL;
+                line0 = CALL & line0_connect = LINE2 & line2_connect = LINE0: TALK;
+                line0 = CALL & line0_connect = LINE2 & line2_connect = NONE: CALL;
+
+                TRUE: ERR;
+
+                esac;
+
+    init(line1) := WAIT;
+    next(line1) := case
+
+                -- Se estou em erro somente posso voltar pro WAIT
+                line1 = ERR: WAIT;
+
+                -- Se estou em wait e tento me conectar a outra linha, vou pra DIAL
+                -- Se estou em wait e alguem conecta vou para RING
+                line1 = WAIT & line1_connect != NONE: DIAL;
+                line1 = WAIT & line0_connect = LINE1: RING;
+                line1 = WAIT & line2_connect = LINE1: RING;
+                line1 = WAIT & line1_connect = NONE: WAIT;
+
+                -- Se eu estou falando e desconecto, volto pra WAIT
+                -- Se estamos conversando e a linha remota desliga, volto pro WAIT
+                line1 = TALK & line1_connect = NONE: WAIT;
+                line1 = TALK & line1_connect != NONE: TALK;
+                line1 = TALK & line1_connect = LINE0 & line0_connect = NONE: WAIT;
+                line1 = TALK & line1_connect = LINE2 & line2_connect = NONE: WAIT;
+
+                -- Se estou tocando e me conecto, falamos (TALK)
+                line1 = RING & line1_connect != NONE: TALK;
+                line1 = RING & line1_connect = NONE: RING;
+
+                -- Se estou discando e a linha remota esta livre, passa a tocar
+                line1 = DIAL & line1_connect = LINE0 & line0_connect = NONE: CALL;
+                line1 = DIAL & line1_connect = LINE0 & line0_connect != NONE: ERR;
+                line1 = DIAL & line1_connect = LINE2 & line2_connect = NONE: CALL;
+                line1 = DIAL & line1_connect = LINE2 & line2_connect != NONE: ERR;
+
+                -- Se esta tocando e a linha remota conecta em mim, conversamos
+                line1 = CALL & line1_connect = LINE0 & line0_connect = LINE1: TALK;
+                line1 = CALL & line1_connect = LINE0 & line0_connect = NONE: CALL;
+                line1 = CALL & line1_connect = LINE2 & line2_connect = LINE1: TALK;
+                line1 = CALL & line1_connect = LINE2 & line2_connect = NONE: CALL;
+
+                TRUE: ERR;
+
+                esac;
+
+    init(line2) := WAIT;
+    next(line2) := case
+
+                -- Se estou em erro somente posso voltar pro WAIT
+                line2 = ERR: WAIT;
+
+                -- Se estou em wait e tento me conectar a outra linha, vou pra DIAL
+                -- Se estou em wait e alguem conecta vou para RING
+                line2 = WAIT & line2_connect != NONE: DIAL;
+                line2 = WAIT & line0_connect = LINE2: RING;
+                line2 = WAIT & line1_connect = LINE2: RING;
+                line2 = WAIT & line2_connect = NONE: WAIT;
+
+                -- Se eu estou falando e desconecto, volto pra WAIT
+                -- Se estamos conversando e a linha remota desliga, volto pro WAIT
+                line2 = TALK & line2_connect = NONE: WAIT;
+                line2 = TALK & line2_connect != NONE: TALK;
+                line2 = TALK & line2_connect = LINE0 & line0_connect = NONE: WAIT;
+                line2 = TALK & line2_connect = LINE1 & line1_connect = NONE: WAIT;
+
+                -- Se estou tocando e me conecto, falamos (TALK)
+                line2 = RING & line2_connect != NONE: TALK;
+                line2 = RING & line2_connect = NONE: RING;
+
+                -- Se estou discando e a linha remota esta livre, passa a tocar
+                line2 = DIAL & line2_connect = LINE0 & line0_connect = NONE: CALL;
+                line2 = DIAL & line2_connect = LINE0 & line0_connect != NONE: ERR;
+                line2 = DIAL & line2_connect = LINE1 & line1_connect = NONE: CALL;
+                line2 = DIAL & line2_connect = LINE1 & line1_connect != NONE: ERR;
+
+                -- Se esta tocando e a linha remota conecta em mim, conversamos
+                line2 = CALL & line2_connect = LINE0 & line0_connect = LINE2: TALK;
+                line2 = CALL & line2_connect = LINE0 & line0_connect = NONE: CALL;
+                line2 = CALL & line2_connect = LINE1 & line1_connect = LINE2: TALK;
+                line2 = CALL & line2_connect = LINE1 & line1_connect = NONE: CALL;
+
+                TRUE: ERR;
+                esac;
+
+-- Se A esta conectado em B, B deve estar conectado em A ou nao estar conectado
+SPEC AG !( (line0 in { CALL, TALK } & line0_connect = LINE1) & line1_connect = LINE2 )
+SPEC AG !( (line0 in { CALL, TALK } & line0_connect = LINE2) & line2_connect = LINE1 )
+SPEC AG !( (line1 in { CALL, TALK } & line1_connect = LINE2) & line2_connect = LINE0 )
+
+-- Se A esta falando com B, B deve estar conectado a A
+SPEC AG !( (line0 = TALK & line0_connect = LINE1) & line1 != TALK )
+SPEC AG !( (line0 = TALK & line0_connect = LINE2) & line2 != TALK )
+SPEC AG !( (line1 = TALK & line1_connect = LINE0) & line0 != TALK )
+SPEC AG !( (line1 = TALK & line1_connect = LINE2) & line2 != TALK )
+SPEC AG !( (line2 = TALK & line2_connect = LINE0) & line0 != TALK )
+SPEC AG !( (line2 = TALK & line2_connect = LINE1) & line1 != TALK )
+
+-- Se A esta tocando, B ou C precisam estar conectados a A
+SPEC AG !( line0 = RING & !(line1_connect = LINE0 | line2_connect = LINE0) )
+SPEC AG !( line1 = RING & !(line0_connect = LINE1 | line2_connect = LINE1) )
+SPEC AG !( line2 = RING & !(line0_connect = LINE2 | line1_connect = LINE2) )
+
+-- Se A esta ligando para B, B deve estar em WAIT ou RINGING
+SPEC AG !( (line0 = CALL & line0_connect = LINE1) & !(line1 in { WAIT, RING }) )
+SPEC AG !( (line0 = CALL & line0_connect = LINE2) & !(line2 in { WAIT, RING }) )
+SPEC AG !( (line1 = CALL & line1_connect = LINE0) & !(line0 in { WAIT, RING }) )
+SPEC AG !( (line1 = CALL & line1_connect = LINE2) & !(line2 in { WAIT, RING }) )
+SPEC AG !( (line2 = CALL & line2_connect = LINE0) & !(line0 in { WAIT, RING }) )
+SPEC AG !( (line2 = CALL & line2_connect = LINE1) & !(line1 in { WAIT, RING }) )
+
+-- Sempre e verdade que se A esta ligando para B, fatalmente eles conversarao
+SPEC AG ( (line0 = CALL & line0_connect = line1 ) -> AF (line1_connect = LINE0 & line0 = TALK & line1 = TALK) )
+SPEC AG ( (line0 = CALL & line0_connect = line2 ) -> AF (line2_connect = LINE0 & line0 = TALK & line2 = TALK) )
+SPEC AG ( (line1 = CALL & line1_connect = line0 ) -> AF (line0_connect = LINE0 & line0 = TALK & line0 = TALK) )
+SPEC AG ( (line1 = CALL & line1_connect = line2 ) -> AF (line2_connect = LINE0 & line0 = TALK & line2 = TALK) )
+SPEC AG ( (line2 = CALL & line2_connect = line0 ) -> AF (line0_connect = LINE0 & line0 = TALK & line0 = TALK) )
+SPEC AG ( (line2 = CALL & line2_connect = line1 ) -> AF (line1_connect = LINE0 & line0 = TALK & line1 = TALK) )

@@ -1,0 +1,1 @@
+Colocar aqui os arquivos das proteínas da família gzipados

@@ -1,0 +1,9 @@
+#!/bin/bash
+export LOLEV_MODE=PASSIVE
+export LOLEV_MTU=1500
+export LOLEV_LOCAL_PORT=2000
+export LOLEV_REMOTE_PORT=20000
+export LOLEV_REMOTE_HOST=127.0.0.1
+cd server
+valgrind ./server
+cd ..

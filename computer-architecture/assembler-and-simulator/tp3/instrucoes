@@ -1,0 +1,19 @@
+01	load
+02	store
+03	add
+04	sub
+05	jmp
+06	jpg
+07	jpl
+08	jpe
+09	jpne
+10	push
+11	pop
+12	read
+13	write
+14	call
+15	ret
+16	halt
+17	word
+18	end
+

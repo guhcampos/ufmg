@@ -1,0 +1,9 @@
+if [ ! -e ./vmach ]
+then
+	cd ../tp1 && make && cp vmach ../tp3/. && cd ../tp3
+fi
+
+if [ ! -e ./assembler ]
+then
+	cd ../tp2 && make && cp assembler ../tp3/. && cd ../tp3
+fi

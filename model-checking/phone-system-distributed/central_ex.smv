@@ -1,0 +1,145 @@
+--
+-- Linha e agora uma maquina de estados que compreende o modelo
+-- de ligacao telefonica
+--
+MODULE linha(tronco, ID)
+
+VAR
+
+    estado: { WAIT, CALL, RING, TALK, DIAL, ERR };
+    
+ASSIGN
+
+    init(estado) := WAIT;
+    --
+    -- As mudancas de estado foram simplificadas, o objetivo agora
+    -- e descobrir se a linha fica presa em estado de erro
+    --
+    next(estado) :=     case
+                        estado = WAIT & tronco = ID: { WAIT, CALL, RING, DIAL };
+                        estado = WAIT & tronco != NONE & tronco != ID: WAIT ;
+
+                        estado = CALL & tronco  = ID: { WAIT, CALL };
+                        estado = CALL & tronco != ID: ERR;
+
+                        estado = RING & tronco  = ID: { WAIT, RING, TALK };
+                        estado = RING & tronco != ID: ERR;
+
+                        estado = TALK & tronco  = ID: { WAIT, TALK };
+                        estado = TALK & tronco != ID: ERR;
+
+                        estado = DIAL & tronco  = ID: { WAIT, CALL };
+                        estado = DIAL & tronco != ID: ERR;
+
+                        estado = ERR: ERR;
+                        TRUE: ERR;
+                        esac;
+
+
+--
+-- Main agora eh um Tronco: um meio compartilhado por uma ou mais
+-- centrais telefonicas
+--
+MODULE main
+
+VAR 
+
+    tronco_A: { NONE, A0, A1, ERR };
+    tronco_B: { NONE, B0, B1, ERR };
+
+    lock_A: { NONE, A0, A1, ERR };
+    lock_B: { NONE, B0, B1, ERR };
+
+    linha_A0: linha(tronco_A, A0);
+    linha_A1: linha(tronco_A, A1);
+
+    linha_B0: linha(tronco_B, B0);
+    linha_B1: linha(tronco_B, B1);
+
+
+ASSIGN
+
+    init(lock_A) := NONE;
+    next(lock_A) := case
+                    lock_A = NONE & tronco_A = NONE: { A0, A1 };
+                    lock_A = A0   & tronco_A = NONE: A0;
+                    lock_A = A1   & tronco_A = NONE: A1;
+                    lock_A = A0   & tronco_A = A0  : A0;
+                    lock_A = A1   & tronco_A = A1  : A1;
+                    TRUE: ERR;
+                    esac;
+
+    init(lock_B) := NONE;
+    next(lock_B) := case
+                    lock_B = NONE & tronco_B = NONE: { B0, B1 };
+                    lock_B = B0   & tronco_B = NONE: B0;
+                    lock_B = B1   & tronco_B = NONE: B1;
+                    lock_B = B0   & tronco_B = B0  : B0;
+                    lock_B = B1   & tronco_B = B1  : B1;
+                    TRUE: ERR;
+                    esac;
+
+
+    init(tronco_A) := NONE;
+    next(tronco_A) :=   case
+                        lock_A = NONE: NONE;
+                        lock_A = A0 & tronco_A = NONE: A0;
+                        lock_A = A0 & tronco_A = A0: { A0, NONE};
+                        lock_A = A1 & tronco_A = NONE: A1;
+                        lock_A = A1 & tronco_A = A1: { A1, NONE};
+                        TRUE: ERR;
+                        esac;
+
+    init(tronco_B) := NONE;
+    next(tronco_B) :=   case
+                        lock_B = NONE: NONE;
+                        lock_B = B0 & tronco_B = NONE: B0;
+                        lock_B = B0 & tronco_B = B0: { B0, NONE };
+                        lock_B = B1 & tronco_B = NONE: B1;
+                        lock_B = B1 & tronco_B = B1: { B1, NONE };
+                        TRUE: ERR;
+                        esac;
+
+--
+-- Primeiro garantimos que os locks e troncos nunca entrarao em estado de erro
+--
+SPEC AG !(tronco_A = ERR)
+SPEC AG !(tronco_B = ERR)
+SPEC AG !(lock_A = ERR)
+SPEC AG !(lock_B = ERR)
+--
+-- Linhas tambem nunca podem entrar em estado de erro
+--
+SPEC AG !(linha_A0.estado = ERR)
+SPEC AG !(linha_A1.estado = ERR)
+SPEC AG !(linha_B0.estado = ERR)
+SPEC AG !(linha_B1.estado = ERR)
+--
+-- Se uma linha detém o tronco, deve também deter a lock
+--
+SPEC AG !(tronco_A = A0 & lock_A != A0)
+SPEC AG !(tronco_A = A1 & lock_A != A1)
+SPEC AG !(tronco_A = B0 & lock_A != B0)
+SPEC AG !(tronco_A = B1 & lock_A != B1)
+--
+-- Toda linha deve ser capaz de se conectar ao tronco
+--
+SPEC EG ((linha_A0.estado in { CALL, TALK, DIAL, RING}) & tronco_A = A0 & lock_A = A0)
+SPEC EG ((linha_A1.estado in { CALL, TALK, DIAL, RING}) & tronco_A = A1 & lock_A = A1)
+SPEC EG ((linha_B0.estado in { CALL, TALK, DIAL, RING}) & tronco_B = B0 & lock_B = B0)
+SPEC EG ((linha_B1.estado in { CALL, TALK, DIAL, RING}) & tronco_B = B1 & lock_B = B1)
+--
+-- Se uma linha está conectada, deve possuir o tronco e o lock
+--
+SPEC AG !((linha_A0.estado in {CALL, TALK, DIAL, RING}) & (tronco_A != A0 | lock_A != A0))
+SPEC AG !((linha_A1.estado in {CALL, TALK, DIAL, RING}) & (tronco_A != A1 | lock_A != A1))
+SPEC AG !((linha_B0.estado in {CALL, TALK, DIAL, RING}) & (tronco_B != B0 | lock_B != B0))
+SPEC AG !((linha_B1.estado in {CALL, TALK, DIAL, RING}) & (tronco_B != B1 | lock_B != B1))
+--
+-- Todas as linhas devem ser capazes de comunicar-se entre si
+--
+SPEC EG (linha_A0.estado = TALK & linha_B0 = TALK)
+SPEC EG (linha_A0.estado = TALK & linha_B1 = TALK)
+SPEC EG (linha_A1.estado = TALK & linha_B0 = TALK)
+SPEC EG (linha_A1.estado = TALK & linha_B1 = TALK)
+

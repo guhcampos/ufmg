@@ -1,0 +1,15 @@
+RSA é um algoritmo de encriptação de dados, que deve o seu nome a três professores do Instituto MIT (fundadores da actual empresa RSA Data Security, Inc.), Ron Rivest, Adi Shamir e Len Adleman, que inventaram este algoritmo — até à data (2005), a mais bem sucedida implementação de sistemas de chaves assimétricas, e fundamenta-se em Teorias Clássicas dos Números. É considerado dos mais seguros, já que mandou por terra todas as tentativas de quebrá-lo. Foi também o primeiro algoritmo a possibilitar encriptação e assinatura digital, e uma das grandes inovações em criptografia de chave pública.
+
+Em traços gerais, são gerados dois pares de números – as chaves – de tal forma que uma mensagem encriptada com o primeiro par possa ser apenas decriptada com o segundo par; mas, o segundo número não pode ser derivado do primeiro. Esta propriedade assegura que o primeiro número possa ser divulgado a alguém que pretenda enviar uma mensagem encriptada ao detentor do segundo número, já que apenas essa pessoa pode decriptar a mensagem. O primeiro par é designado como chave pública, e o segundo como chave secreta.
+
+RSA baseia-se no fato de que, se bem que encontrar dois números primos de grandes dimensões (p.e. 100 dígitos) é computacionalmente fácil, conseguir factorizar o produto de tais dois números é considerado computacionalmente impossível (não o é, mas o tempo estimado para o conseguir ronda os milhares de anos). De fato, este algoritmo mostra-se computacionalmente inquebrável com números de tais dimensões, e a sua força é geralmente quantificada com o número de bits utilizados para descrever tais números. Para um número de 100 dígitos são necessários cerca de 350 bits, e as implementações atuais superam os 512 e mesmo os 1024 bits.
+
+O algoritmo RSA é extensível a este contexto, pelas suas propriedades. Para implementar um sistema de assinaturas digitais com RSA, o utilizador que possua uma chave privada d poderá assinar uma dada mensagem (em blocos) m com a seguinte expressão:
+s = md mod n
+
+Como se pode deduzir, é difícil descobrir s sem o conhecimento de d. Portanto, uma assinatura digital definida conforme esta equação é difícil de forjar. Mais, o emissor de m não pode negar tê-la emitido, já que mais ninguém poderia ter criado tal assinatura. O receptor recupera a mensagem utilizando a chave pública e do emissor:
+se = (md)e mod n = m mod n
+
+Como tal, o receptor consegue validar a assinatura do emissor calculando se mod n. Podemos verificar então que o algoritmo RSA satisfaz os três requisitos necessários de uma assinatura digital.
+
+É fácil deduzir que a assinatura varia dependentemente da mensagem em si, e que operando sobre mensagens longas o tamanho da assinatura seria proporcional. Para colmatar esta situação, faz-se operar o algoritmo sobre um resumo (digest) da mensagem, que identifique essa mensagem como única – geralmente o digest de uma mensagem varia alterando um único byte –, o que mantém, como consequência, que uma assinatura varia de mensagem para mensagem, para um mesmo emissor.

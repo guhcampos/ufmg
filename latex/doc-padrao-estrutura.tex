@@ -1,0 +1,43 @@
+\documentclass[a4paper,10pt,oneside,titlepagethebibliography,]{article}
+% Controle das margens
+\usepackage{geometry}
+\geometry{verbose,a4paper,tmargin=3cm,bmargin=2cm,lmargin=2cm,rmargin=2cm,headsep=5mm,footskip=0cm}
+% Localização
+\usepackage[brazil]{babel} % português do Brasil. 
+\usepackage[T1]{fontenc} % fontes com acentos no PDF
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+\usepackage{indentfirst}
+\usepackage{moreverb}
+% Controlar linhas orfas e viuvas
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+% Formatar notas de rodape
+\usepackage[hang]{footmisc}
+\setlength{\footnotemargin}{1em}
+% Matemática
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+% Imagens
+\usepackage{graphicx}
+% Extras
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\usepackage{listings}
+\lstset{frame=single,numbers=left}
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.75}
+% Informações
+\author{Gustavo Campos Ferreira Guimarães}
+\title{TITULO}
+
+\begin{document}
+\input{title.tex}
+\tableofcontents
+\clearpage
+\input{corpo.tex}
+\clearpage
+\input{bib.tex}
+\end{document}

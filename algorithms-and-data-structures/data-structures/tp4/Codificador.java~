@@ -1,0 +1,47 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.FileNotFoundException;
+public class Codificador {
+
+	static BufferedReader entrada;
+
+	public static void main (String[] arEntrada) throws IOException {
+
+		if ( arEntrada.length > 0 ) {
+			try {
+				entrada = new BufferedReader ( new FileReader ( arEntrada[0] ) );
+			}
+			catch (FileNotFoundException erro) {
+				System.out.println ("");
+				System.out.println (erro);
+				System.out.println ("Arquivo nao encontrado, tente novamente");
+				System.out.println ("");
+				System.exit(0);
+			}
+		}
+		else {
+			System.out.println ("Entre com um arquivo na linha de comando");
+			System.exit (0);
+		}
+		NodoBinario[] entradas = new NodoBinario[ Integer.parseInt(entrada.readLine()) ];
+
+		String[] linha = new String[2];		
+		for (int i=0; i< entradas.length;i++) {
+		//for ( NodoBinario i : entradas ) {
+			linha = entrada.readLine().split("\\s");
+			char c = linha[0].charAt(0);
+			double n = Double.parseDouble ( linha[1] );
+			
+			entradas[i] = new NodoBinario ( new HufPar ( c, n ) );
+		//	i = new NodoBinario ( new HufPar ( c, n ) );
+		}
+		for ( NodoBinario i : entradas ) {
+			System.out.print ( i.getHufPar.obtemCaracter() );
+			System.out.print (" - ");
+			System.out.print ( i.getHufPar.obtemFreq()+ "\n" );
+		}
+		FilaDePrioridade teste = new FilaDePrioridade (entradas);
+		teste.printFila();
+	}
+}
